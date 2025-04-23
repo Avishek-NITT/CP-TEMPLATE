@@ -1,17 +1,44 @@
 #include <bits/stdc++.h>
 using namespace std;
+
+
+// PBDS
+// #include <ext/pb_ds/assoc_container.hpp>
+// using namespace __gnu_pbds;
+// template <class T>
+// using Tree =
+//     tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+
+
+
+
+
+
+
+
+
 #define ll long long
+#define int long long
 #define FOR(i, a, b) for (ll i = a; i < b; i++)
-#define bit(x, i) (x & (1 << i)) 
-#define max(a, b) (a < b ? b : a)
 #define PB push_back
-#define UM unordered_map
-#define sf1(a) scanf("%lld", &a) 
-#define sf2(a,b) scanf("%lld", &a, &b)
-#define pf1(a) printf("%lld", a)
-#define pf2(a,b) printf("%lld %lld", a, b)
- 
-ll mod_factor = pow(10,9) + 7;
+#define enl "\n"
+#define all(v) v.begin(),v.end()
+#define yes cout << "YES" << enl;
+#define no cout << "NO" << enl;
+#define INF 1e18
+ll mod_factor = (ll)1e9 + 7;
+// ll mod_factor = 998244353;
+
+
+
+
+
+
+void input(vector<int>& v){
+    for(int i = 0 ; i < v.size(); i++){
+        cin >> v[i];
+    }
+}
  
 bool isprime(ll n)
 {
@@ -45,9 +72,7 @@ bool isSubstring(string &a, string &b)
     return a.find(b) != string::npos;
 }
  
-bool is_set(unsigned int number, int x) {
-    return (number >> x) & 1;
-}
+ 
  
 bool isPerfectSquare(ll x)
 {
@@ -58,60 +83,27 @@ bool isPerfectSquare(ll x)
     return false;
 }
  
-int compare(int a , int b){  
-    int result = a^b;
-    int count = 0;
-    
-    for(int i = 0; i < 32; i++){
-        count += (result >> i) & 1;
-    }
-    return count;
-}
  
-int count1s(int a){
-    int count =0;
-    for(int i =0; i < 32; i++){
-        count += (a>>i)&1;
-    }
-    return count;
-}
- 
-ll gcd(ll a, ll b)
-{
-    if (a == 0)
-        return b;
-    return gcd(b % a, a);
-}
- 
-void getPrimeFactors(ll n, unordered_map<ll,ll>&m) 
-{ 
-    while (n % 2 == 0) 
-    { 
-        m[2] += 1;
-        n = n/2; 
-    } 
-    for (int i = 3; i <= sqrt(n); i = i + 2) 
-    { 
-        while (n % i == 0) 
-        { 
-            m[i] += 1; 
-            n = n/i; 
-        } 
-    } 
-    if (n > 2) 
-        m[n] += 1; 
-} 
- 
- 
-vector<ll> makePrefix(vector<ll> v){
-        vector<ll> prefix(v.size());
-        prefix[0] = v[0];
+vector<ll> makePrefix(vector<ll>& v){    
+        vector<ll> prefix(v.size()+1,0);
+        prefix[1] = v[0];
  
         FOR(i,1,v.size()){
-            prefix[i] = prefix[i-1] + v[i];
+            prefix[i+1] = prefix[i] + v[i];
         }
         return prefix;
 }
+vector<ll> makeSuffix(vector<ll>& v){    
+    int n = v.size();
+    vector<ll> suff(n+1,0);
+    suff[n-1] = v[n-1];
+
+    for(int i = n-2; i >= 0; i--){
+        suff[i] = suff[i+1] + v[i];
+    }
+    return suff;
+}
+ 
  
 template <typename T>
 void vecprint(const vector<T>& v) {
@@ -122,41 +114,125 @@ void vecprint(const vector<T>& v) {
 }
  
  
-// **************************
-
-
-
-
-void solve(){   
-    
+int bexpo(int a , int b,int p){
+    if(a == 0 && b == 0) return 1;
+    if(b == 0) return 1;
+    if(b == 1) return a%p;
+    int x = bexpo(a, b/2,p)%p;
+    if(b%2 == 0) return (x*x)%p;
+    return (((x*x)%p)*a)%p;
 }
- 
- 
- 
- 
-int main()
-{
-    ios::sync_with_stdio(0);    
-    cin.tie(0);
- 
-    // #ifndef ONLINE_JUDGE
-    // freopen("input.txt", "r", stdin);
-    // freopen("output.txt", "w", stdout);
-    // #endif
- 
+long long binpow(long long a, long long b) {
+    if (b == 0)
+        return 1;
+    long long res = binpow(a, b / 2);
+    if (b % 2)
+    return res * res * a;
+    else
+    return res * res;
+}
 
-    std::ifstream inputFile("input.txt");
-    std::ofstream outputFile("output.txt");
+
+void precompute(){  
+}
+// *****************************
+class SegmentTree {
+    private:
+        vector<int> tree;
+        int size;
+    
+        void build(const vector<int>& arr, int node, int l, int r) {
+            if (l == r) {
+                tree[node] = arr[l];
+            } else {
+                int mid = (l + r) / 2;
+                build(arr, 2 * node, l, mid);
+                build(arr, 2 * node + 1, mid + 1, r);
+                tree[node] = tree[2 * node] + tree[2 * node + 1];
+            }
+        }
+    
+        int rangeQuery(int node, int l, int r, int ql, int qr) {
+            if (qr < l || ql > r) return 0; // no overlap
+            if (ql <= l && r <= qr) return tree[node]; // complete overlap
+            int mid = (l + r) / 2;
+            return rangeQuery(2 * node, l, mid, ql, qr) + rangeQuery(2 * node + 1, mid + 1, r, ql, qr);
+        }
+    
+        void pointUpdate(int node, int l, int r, int idx, int val) {
+            if (l == r) {
+                tree[node] += val;
+            } else {
+                int mid = (l + r) / 2;
+                if (idx <= mid)
+                    pointUpdate(2 * node, l, mid, idx, val);
+                else
+                    pointUpdate(2 * node + 1, mid + 1, r, idx, val);
+                tree[node] = tree[2 * node] + tree[2 * node + 1];
+            }
+        }
+    
+        void rangeUpdate(int node, int l, int r, int ql, int qr, int val) {
+            if (qr < l || ql > r) return; // no overlap
+            if (l == r) {
+                tree[node] += val;
+                return;
+            }
+            int mid = (l + r) / 2;
+            rangeUpdate(2 * node, l, mid, ql, qr, val);
+            rangeUpdate(2 * node + 1, mid + 1, r, ql, qr, val);
+            tree[node] = tree[2 * node] + tree[2 * node + 1];
+        }
+    
+    public:
+        SegmentTree(const vector<int>& arr) {
+            size = arr.size();
+            tree.resize(4 * size);
+            build(arr, 1, 0, size - 1);
+        }
+    
+        int query(int left, int right) {
+            return rangeQuery(1, 0, size - 1, left, right);
+        }
+    
+        void update(int index, int value) { //update idx to value
+            pointUpdate(1, 0, size - 1, index, value);
+        }
+    
+        void updateRange(int left, int right, int value) {
+            rangeUpdate(1, 0, size - 1, left, right, value);
+        }
+    };
+
+
+
+void solve() {
+    vector<int> v = {1,2,3,4,5,6,7};
+
+    SegmentTree st(v);
+
+    // cout << st.query(0,0);
+    st.update(0,4);
+    st.updateRange(0,0,4);
+    cout << st.query(0,0);
+}   
+
+signed main()
+{
  
-    ll t ;
-    // t = 1;
-    cin >> t;
+    // ios_base::sync_with_stdio(0);
+	// cin.tie(0);
+        
+    //USACO
+    // freopen("haybales.in", "r", stdin);
+    // freopen("haybales.out", "w" , stdout);
+
+    int t ;
+    t = 1;
+    
+    // cin >> t;
+    precompute();
     while(t--){
         solve();
     }
-    
-
-
-    inputFile.close();
-    outputFile.close();
 }

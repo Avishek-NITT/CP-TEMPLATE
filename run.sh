@@ -1,4 +1,5 @@
 #!/bin/bash
+# ls *.cpp *.txt | entr -s './run.sh'
 
 # Set resource limits
 ulimit -t 10 -v 1000000
@@ -10,6 +11,7 @@ MAX_TIME=5
 MAX_LINES=500
 
 # Compile the test.cpp file
+# g++ -fsanitize=address -fsanitize=undefined -o test test.cpp
 g++ -o test test.cpp
 
 # Check if compilation was successful
